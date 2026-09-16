@@ -1,0 +1,12 @@
+{
+  "name": "insight-pilot",
+  "version": "1.0.0",
+  "description": "InsightPilot：面向电商数仓的自主数据分析 Agent（自然语言问数）",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

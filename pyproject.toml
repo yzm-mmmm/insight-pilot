@@ -1,0 +1,45 @@
+[project]
+name = "insight-pilot"
+version = "0.1.0"
+description = "InsightPilot：面向电商数仓的自主数据分析 Agent（自然语言问数）"
+readme = "README.md"
+requires-python = ">=3.14"
+authors = [
+    { name = "baimiao", email = "2186931857@qq.com" }
+]
+dependencies = [
+    "asyncmy>=0.2.11",
+    "bcrypt>=4.0.0",
+    "cryptography>=46.0.7",
+    "elasticsearch[async]>=8,<9",
+    "fastapi[standard]>=0.135.3",
+    "greenlet>=3.4.0",
+    "huggingface-hub>=1.10.1",
+    "jieba>=0.42.1",
+    "langchain>=1.2.15",
+    "langchain-deepseek>=1.0.1",
+    "langchain-huggingface>=1.2.1",
+    "langgraph>=1.1.6",
+    "loguru>=0.7.3",
+    "mysql-replication>=1.0.0",
+    "omegaconf>=2.3.0",
+    "pyjwt>=2.10.0",
+    "python-dotenv>=1.2.2",
+    "pyyaml>=6.0.3",
+    "qdrant-client>=1.17.1",
+    "sqlalchemy>=2.0.49",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.3.0",
+    "ruff>=0.11.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]

@@ -1,0 +1,203 @@
+/**
+ * 全局样式入口
+ * 加载 Tailwind 层并定义页面基础样式、背景纹理与深色科技风可复用类
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    color-scheme: dark;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    background: #0a0a0f;
+    color: #f5f6fa;
+    overflow: hidden;
+}
+
+button,
+textarea {
+    font: inherit;
+}
+
+::selection {
+    background: rgba(99, 102, 241, 0.32);
+}
+
+@layer components {
+    /* 半透明毛玻璃卡片 + 轻微发光边框，用于面板、气泡、弹窗等主表面 */
+    .glass {
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        background: rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 0 28px rgba(99, 102, 241, 0.10);
+    }
+
+    .glass-strong {
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        background: rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(12px);
+    }
+
+    .bg-accent-gradient {
+        background-image: linear-gradient(135deg, #38bdf8, #6366f1);
+    }
+
+    .text-gradient {
+        background-image: linear-gradient(135deg, #7dd3fc, #c4b5fd);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+}
+
+.grain {
+    opacity: 1;
+    background:
+        radial-gradient(ellipse 90% 55% at 50% -12%, rgba(56, 189, 248, 0.10), transparent),
+        radial-gradient(ellipse 55% 38% at 88% 4%, rgba(99, 102, 241, 0.10), transparent);
+}
+
+.typing-dots span {
+    animation: typing-blink 1.2s infinite;
+}
+
+.typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing-blink {
+    0%,
+    80%,
+    100% {
+        opacity: 0.25;
+        transform: translateY(0);
+    }
+    40% {
+        opacity: 1;
+        transform: translateY(-2px);
+    }
+}
+
+.report-markdown h1,
+.report-markdown h2,
+.report-markdown h3 {
+    margin: 0.8em 0 0.4em;
+    font-weight: 700;
+    line-height: 1.4;
+    color: #164a2c;
+}
+
+.report-markdown h1 {
+    font-size: 1.3em;
+}
+
+.report-markdown h2 {
+    font-size: 1.15em;
+}
+
+.report-markdown h3 {
+    font-size: 1.05em;
+}
+
+.report-markdown p {
+    margin: 0.5em 0;
+}
+
+.report-markdown ul,
+.report-markdown ol {
+    margin: 0.5em 0;
+    padding-left: 1.5em;
+}
+
+.report-markdown li {
+    margin: 0.25em 0;
+}
+
+.report-markdown table {
+    width: 100%;
+    margin: 0.8em 0;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+
+.report-markdown th,
+.report-markdown td {
+    border: 1px solid rgba(230, 230, 240, 0.14);
+    padding: 0.4em 0.6em;
+    text-align: left;
+}
+
+.report-markdown th {
+    background: rgba(99, 102, 241, 0.12);
+    font-weight: 600;
+}
+
+.report-markdown code {
+    background: rgba(22, 74, 44, 0.16);
+    color: #164a2c;
+    font-weight: 600;
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.9em;
+}
+
+.report-markdown pre {
+    overflow-x: auto;
+    margin: 0.8em 0;
+    padding: 0.8em 1em;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(230, 230, 240, 0.10);
+}
+
+.report-markdown pre code {
+    background: transparent;
+    color: #e6e6f0;
+    padding: 0;
+}
+
+.report-markdown blockquote {
+    margin: 0.6em 0;
+    padding: 0.2em 0.9em;
+    border-left: 3px solid rgba(99, 102, 241, 0.6);
+    color: rgba(230, 230, 240, 0.65);
+}
+
+.report-markdown hr {
+    border: none;
+    border-top: 1px solid rgba(230, 230, 240, 0.12);
+    margin: 1em 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

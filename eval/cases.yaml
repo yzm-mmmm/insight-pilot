@@ -1,0 +1,227 @@
+# 问数 Agent 金标准评测集
+#
+# 每条用例包含：
+#   id            唯一编号
+#   question      自然语言问题
+#   golden_sql    标准答案 SQL（执行结果作为对拍金标准）
+#   expect_columns 回答该问题所需的关键字段（「表名.字段名」，与 ColumnInfo.id 一致）
+#   expect_metrics 回答该问题所依赖的指标名称（GMV / AOV）
+#   tags          能力标签，便于按维度筛选
+#
+# 难度分层：
+#   - 基础：单表/单维度聚合、简单过滤（q01~q10）
+#   - 进阶：多指标、COUNT DISTINCT 去重、占比、否定排除、多维组合过滤、
+#           HAVING、TOP N、纯维度查询、空结果等边界情况（q11~q30）
+
+cases:
+  # ---------- 基础 ----------
+  - id: q01
+    question: "统计各地区的销售总额"
+    golden_sql: "SELECT r.region_name AS region, SUM(o.order_amount) AS gmv FROM fact_order o JOIN dim_region r ON o.region_id = r.region_id GROUP BY r.region_name"
+    expect_columns: ["fact_order.order_amount", "dim_region.region_name"]
+    expect_metrics: ["GMV"]
+    tags: [join, group_by, aggregation]
+
+  - id: q02
+    question: "统计各商品品类的总销量"
+    golden_sql: "SELECT p.category AS category, SUM(o.order_quantity) AS sales FROM fact_order o JOIN dim_product p ON o.product_id = p.product_id GROUP BY p.category"
+    expect_columns: ["fact_order.order_quantity", "dim_product.category"]
+    expect_metrics: []
+    tags: [join, group_by, aggregation]
+
+  - id: q03
+    question: "统计2025年第一季度的成交总额"
+    golden_sql: "SELECT SUM(o.order_amount) AS gmv FROM fact_order o JOIN dim_date d ON o.date_id = d.date_id WHERE d.year = 2025 AND d.quarter = 'Q1'"
+    expect_columns: ["fact_order.order_amount", "dim_date.quarter"]
+    expect_metrics: ["GMV"]
+    tags: [join, time_filter, aggregation]
+
+  - id: q04
+    question: "各会员等级的平均订单金额是多少"
+    golden_sql: "SELECT c.member_level AS level, AVG(o.order_amount) AS aov FROM fact_order o JOIN dim_customer c ON o.customer_id = c.customer_id GROUP BY c.member_level"
+    expect_columns: ["fact_order.order_amount", "dim_customer.member_level"]
+    expect_metrics: ["AOV"]
+    tags: [join, group_by, aggregation, metric]
+
+  - id: q05
+    question: "销售额最高的品牌是哪个"
+    golden_sql: "SELECT p.brand AS brand, SUM(o.order_amount) AS gmv FROM fact_order o JOIN dim_product p ON o.product_id = p.product_id GROUP BY p.brand ORDER BY gmv DESC LIMIT 1"
+    expect_columns: ["fact_order.order_amount", "dim_product.brand"]
+    expect_metrics: ["GMV"]
+    tags: [join, group_by, order_by, topn]
+
+  - id: q06
+    question: "华北地区一共有多少笔订单"
+    golden_sql: "SELECT COUNT(*) AS order_count FROM fact_order o JOIN dim_region r ON o.region_id = r.region_id WHERE r.region_name = '华北'"
+    expect_columns: ["dim_region.region_name"]
+    expect_metrics: []
+    tags: [join, value_filter, count]
+
+  - id: q07
+    question: "按月份统计2025年各月的销售总额"
+    golden_sql: "SELECT d.month AS month, SUM(o.order_amount) AS gmv FROM fact_order o JOIN dim_date d ON o.date_id = d.date_id WHERE d.year = 2025 GROUP BY d.month ORDER BY d.month"
+    expect_columns: ["fact_order.order_amount", "dim_date.month"]
+    expect_metrics: ["GMV"]
+    tags: [join, time_filter, group_by, order_by]
+
+  - id: q08
+    question: "男性客户下了多少订单"
+    golden_sql: "SELECT COUNT(*) AS cnt FROM fact_order o JOIN dim_customer c ON o.customer_id = c.customer_id WHERE c.gender = '男'"
+    expect_columns: ["dim_customer.gender"]
+    expect_metrics: []
+    tags: [join, value_filter, count]
+
+  - id: q09
+    question: "手机数码品类的销售额是多少"
+    golden_sql: "SELECT SUM(o.order_amount) AS gmv FROM fact_order o JOIN dim_product p ON o.product_id = p.product_id WHERE p.category = '手机数码'"
+    expect_columns: ["fact_order.order_amount", "dim_product.category"]
+    expect_metrics: ["GMV"]
+    tags: [join, value_filter, aggregation]
+
+  - id: q10
+    question: "所有订单的平均订单金额是多少"
+    golden_sql: "SELECT AVG(o.order_amount) AS aov FROM fact_order o"
+    expect_columns: ["fact_order.order_amount"]
+    expect_metrics: ["AOV"]
+    tags: [aggregation, metric]
+
+  # ---------- 进阶 / 边界 ----------
+  - id: q11
+    question: "各地区的成交总额和平均订单金额分别是多少"
+    golden_sql: "SELECT r.region_name AS region, SUM(o.order_amount) AS gmv, AVG(o.order_amount) AS aov FROM fact_order o JOIN dim_region r ON o.region_id = r.region_id GROUP BY r.region_name"
+    expect_columns: ["fact_order.order_amount", "dim_region.region_name"]
+    expect_metrics: ["GMV", "AOV"]
+    tags: [join, group_by, multi_metric]
+
+  - id: q12
+    question: "销量最高的品牌是哪个"
+    golden_sql: "SELECT p.brand AS brand, SUM(o.order_quantity) AS qty FROM fact_order o JOIN dim_product p ON o.product_id = p.product_id GROUP BY p.brand ORDER BY qty DESC LIMIT 1"
+    expect_columns: ["fact_order.order_quantity", "dim_product.brand"]
+    expect_metrics: []
+    tags: [join, group_by, order_by, topn]
+
+  - id: q13
+    question: "有多少个客户下过订单"
+    golden_sql: "SELECT COUNT(DISTINCT o.customer_id) AS customers FROM fact_order o"
+    expect_columns: ["fact_order.customer_id"]
+    expect_metrics: []
+    tags: [count_distinct]
+
+  - id: q14
+    question: "手机数码品类的销售额占全部销售额的比例是多少"
+    golden_sql: "SELECT SUM(CASE WHEN p.category = '手机数码' THEN o.order_amount ELSE 0 END) / SUM(o.order_amount) AS ratio FROM fact_order o JOIN dim_product p ON o.product_id = p.product_id"
+    expect_columns: ["fact_order.order_amount", "dim_product.category"]
+    expect_metrics: ["GMV"]
+    tags: [join, ratio, aggregation]
+
+  - id: q15
+    question: "除华北以外各地区的订单总数是多少"
+    golden_sql: "SELECT COUNT(*) AS order_count FROM fact_order o JOIN dim_region r ON o.region_id = r.region_id WHERE r.region_name <> '华北'"
+    expect_columns: ["dim_region.region_name"]
+    expect_metrics: []
+    tags: [join, negation, count]
+
+  - id: q16
+    question: "华东地区黄金会员在手机数码品类的订单量是多少"
+    golden_sql: "SELECT COUNT(*) AS cnt FROM fact_order o JOIN dim_region r ON o.region_id = r.region_id JOIN dim_customer c ON o.customer_id = c.customer_id JOIN dim_product p ON o.product_id = p.product_id WHERE r.region_name = '华东' AND c.member_level = '黄金' AND p.category = '手机数码'"
+    expect_columns: ["dim_region.region_name", "dim_customer.member_level", "dim_product.category"]
+    expect_metrics: []
+    tags: [multi_join, multi_filter, count]
+
+  - id: q17
+    question: "2026 年的订单有多少笔"
+    golden_sql: "SELECT COUNT(*) AS cnt FROM fact_order o JOIN dim_date d ON o.date_id = d.date_id WHERE d.year = 2026"
+    expect_columns: ["dim_date.year"]
+    expect_metrics: []
+    tags: [empty_result, time_filter, count]
+
+  - id: q18
+    question: "各商品品类的平均订单金额是多少"
+    golden_sql: "SELECT p.category AS category, AVG(o.order_amount) AS aov FROM fact_order o JOIN dim_product p ON o.product_id = p.product_id GROUP BY p.category"
+    expect_columns: ["fact_order.order_amount", "dim_product.category"]
+    expect_metrics: ["AOV"]
+    tags: [join, group_by, metric]
+
+  - id: q19
+    question: "2025 年 3 月的销售总额是多少"
+    golden_sql: "SELECT SUM(o.order_amount) AS gmv FROM fact_order o JOIN dim_date d ON o.date_id = d.date_id WHERE d.year = 2025 AND d.month = 3"
+    expect_columns: ["fact_order.order_amount", "dim_date.month"]
+    expect_metrics: ["GMV"]
+    tags: [join, time_filter, aggregation]
+
+  - id: q20
+    question: "男女客户的销售额分别是多少"
+    golden_sql: "SELECT c.gender AS gender, SUM(o.order_amount) AS gmv FROM fact_order o JOIN dim_customer c ON o.customer_id = c.customer_id GROUP BY c.gender"
+    expect_columns: ["fact_order.order_amount", "dim_customer.gender"]
+    expect_metrics: ["GMV"]
+    tags: [join, group_by, aggregation]
+
+  - id: q21
+    question: "销量前三的商品品类是哪些"
+    golden_sql: "SELECT p.category AS category, SUM(o.order_quantity) AS qty FROM fact_order o JOIN dim_product p ON o.product_id = p.product_id GROUP BY p.category ORDER BY qty DESC LIMIT 3"
+    expect_columns: ["fact_order.order_quantity", "dim_product.category"]
+    expect_metrics: []
+    tags: [join, group_by, order_by, topn]
+
+  - id: q22
+    question: "广东省的订单总金额是多少"
+    golden_sql: "SELECT SUM(o.order_amount) AS gmv FROM fact_order o JOIN dim_region r ON o.region_id = r.region_id WHERE r.province = '广东省'"
+    expect_columns: ["fact_order.order_amount", "dim_region.province"]
+    expect_metrics: ["GMV"]
+    tags: [join, value_filter, aggregation]
+
+  - id: q23
+    question: "一共有多少个品牌"
+    golden_sql: "SELECT COUNT(DISTINCT brand) AS brand_count FROM dim_product"
+    expect_columns: ["dim_product.brand"]
+    expect_metrics: []
+    tags: [count_distinct, dimension_only]
+
+  - id: q24
+    question: "销售额超过 20000 的品牌有哪些"
+    golden_sql: "SELECT p.brand AS brand, SUM(o.order_amount) AS gmv FROM fact_order o JOIN dim_product p ON o.product_id = p.product_id GROUP BY p.brand HAVING SUM(o.order_amount) > 20000"
+    expect_columns: ["fact_order.order_amount", "dim_product.brand"]
+    expect_metrics: ["GMV"]
+    tags: [join, group_by, having]
+
+  - id: q25
+    question: "iPhone 15 Pro 一共卖了多少件"
+    golden_sql: "SELECT SUM(o.order_quantity) AS qty FROM fact_order o JOIN dim_product p ON o.product_id = p.product_id WHERE p.product_name = 'iPhone 15 Pro'"
+    expect_columns: ["fact_order.order_quantity", "dim_product.product_name"]
+    expect_metrics: []
+    tags: [join, value_filter, aggregation]
+
+  - id: q26
+    question: "各省份的订单数量分别是多少"
+    golden_sql: "SELECT r.province AS province, COUNT(*) AS order_count FROM fact_order o JOIN dim_region r ON o.region_id = r.region_id GROUP BY r.province"
+    expect_columns: ["dim_region.province"]
+    expect_metrics: []
+    tags: [join, group_by, count]
+
+  - id: q27
+    question: "单笔订单金额最高的是多少"
+    golden_sql: "SELECT MAX(o.order_amount) AS max_amount FROM fact_order o"
+    expect_columns: ["fact_order.order_amount"]
+    expect_metrics: []
+    tags: [aggregation, max]
+
+  - id: q28
+    question: "总订单数和总销售金额分别是多少"
+    golden_sql: "SELECT COUNT(*) AS order_count, SUM(o.order_amount) AS gmv FROM fact_order o"
+    expect_columns: ["fact_order.order_amount"]
+    expect_metrics: ["GMV"]
+    tags: [multi_metric, aggregation]
+
+  - id: q29
+    question: "2025 年第一季度华北地区的销售额是多少"
+    golden_sql: "SELECT SUM(o.order_amount) AS gmv FROM fact_order o JOIN dim_date d ON o.date_id = d.date_id JOIN dim_region r ON o.region_id = r.region_id WHERE d.year = 2025 AND d.quarter = 'Q1' AND r.region_name = '华北'"
+    expect_columns: ["fact_order.order_amount", "dim_date.quarter", "dim_region.region_name"]
+    expect_metrics: ["GMV"]
+    tags: [multi_join, multi_filter, aggregation]
+
+  - id: q30
+    question: "各会员等级的客户数量分别是多少"
+    golden_sql: "SELECT c.member_level AS level, COUNT(DISTINCT o.customer_id) AS customers FROM fact_order o JOIN dim_customer c ON o.customer_id = c.customer_id GROUP BY c.member_level"
+    expect_columns: ["dim_customer.member_level", "fact_order.customer_id"]
+    expect_metrics: []
+    tags: [join, group_by, count_distinct]
