@@ -23,7 +23,7 @@ export function FlowView({ flow = [] }: { flow?: FlowStep[] }) {
   const failed = flow.filter((step) => step.status === "error");
 
   return (
-    <section className="mt-4 border border-white/10 bg-white/[0.03] px-4 py-3">
+    <section className="mt-4 border border-black/10 bg-white/60 px-4 py-3">
       <div className="mb-2 flex items-center justify-between gap-3">
         <span className="text-sm font-semibold text-ink">分析流程</span>
         <span className="text-xs text-ink/45">LangGraph</span>

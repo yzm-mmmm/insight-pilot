@@ -20,6 +20,7 @@
 ## 目录
 
 - [项目介绍](#项目介绍)
+- [界面预览](#界面预览)
 - [核心能力](#核心能力)
 - [系统架构](#系统架构)
 - [分析流程](#分析流程)
@@ -29,6 +30,7 @@
 - [API 接口](#api-接口)
 - [核心机制](#核心机制)
   - [SQL 只读安全](#sql-只读安全)
+  - [数据权限](#数据权限)
   - [数据源接入与实时同步](#数据源接入与实时同步)
   - [系统化评测](#系统化评测)
   - [链路追踪 / 可观测性](#链路追踪--可观测性)
@@ -52,6 +54,24 @@
 | 交互体验 | 一次性问答 | 登录鉴权、多轮追问、会话持久化、SSE 流式进度 |
 | 安全可控 | 直接执行 SQL | SQL 只读护栏 + 表级权限，杜绝误写数仓 |
 | 质量治理 | 无法度量 | 金标准评测、链路追踪、反馈闭环在线进化 |
+
+## 界面预览
+
+**主界面 · 多轮问数**
+
+<p align="center"><img src="docs/images/home.png" alt="主界面" width="100%"/></p>
+
+**查询结果 · 表格 + 图表 + 分析报告**
+
+<p align="center"><img src="docs/images/query-result.png" alt="查询结果" width="48%"/></p>
+
+**登录 / 注册**
+
+<p align="center"><img src="docs/images/login.png" alt="登录注册" width="45%"/></p>
+
+**用户管理**
+
+<p align="center"><img src="docs/images/user-management.png" alt="用户管理" width="60%"/></p>
 
 ## 核心能力
 
@@ -325,9 +345,23 @@ pnpm dev
 
 该校验是唯一强制点，落在 `DWMySQLRepository.run()` 与 `validate()` 两个出口，任何一条进入数仓执行的 SQL 都绕不开它。
 
+### 数据权限
+
+除 SQL 只读护栏外，系统还提供表级访问控制：查询某张表前须先提交申请，管理员审批通过后方可查询；未授权时，问数链路会在执行前拦截并提示「无权访问表」，避免越权读取敏感表。
+
+<p align="center"><img src="docs/images/permissions.png" alt="数据权限管理" width="50%"/></p>
+
+<p align="center"><img src="docs/images/permission-apply.png" alt="数据权限申请" width="50%"/></p>
+
+<p align="center"><img src="docs/images/permission-denied.png" alt="无权访问拦截" width="80%"/></p>
+
 ### 数据源接入与实时同步
 
 系统支持把外部 MySQL 业务库接入进来，经管理员审批后全量镜像进自有数仓 `dw`，并订阅源库 binlog 实时增量同步。数据最终都落在 `dw`，因此下游的检索、`sql_guard` 白名单、表级权限链路全部复用，镜像表就是 `dw` 里的普通表。
+
+<p align="center"><img src="docs/images/data-sources.png" alt="数据源面板" width="65%"/></p>
+
+<p align="center"><img src="docs/images/data-source-apply.png" alt="数据源接入申请" width="45%"/></p>
 
 **接入流程（两级审批）**
 
@@ -419,6 +453,8 @@ tail -f logs/traces.jsonl
 ```
 
 前端会话页顶栏的「链路追踪」按钮会打开右侧抽屉，逐条 trace 可视化节点时间线、LLM token/成本明细与 SQL 历史。
+
+<p align="center"><img src="docs/images/trace.png" alt="链路追踪面板" width="40%"/></p>
 
 > 成本估算中的单价为 [tracer.py](app/observability/tracer.py) 里写死的 deepseek-chat 定价常量，换模型后需同步调整。
 

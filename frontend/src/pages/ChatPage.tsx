@@ -372,7 +372,7 @@ export default function ChatPage() {
 
   return (
     <div className="h-dvh overflow-hidden bg-parchment text-ink">
-      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(90deg,rgba(230,230,240,0.035)_1px,transparent_1px),linear-gradient(rgba(230,230,240,0.03)_1px,transparent_1px)] bg-[size:48px_48px]" />
+      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(90deg,rgba(22,101,52,0.04)_1px,transparent_1px),linear-gradient(rgba(22,101,52,0.035)_1px,transparent_1px)] bg-[size:48px_48px]" />
       <div className="pointer-events-none fixed inset-0 grain" />
       <Watermark text={user?.username ?? ""} />
       <ProfileDialog open={profileOpen} onClose={() => setProfileOpen(false)} />
@@ -383,9 +383,9 @@ export default function ChatPage() {
 
       <div className="relative grid h-full min-h-0 overflow-hidden lg:grid-cols-[300px_minmax(0,1fr)]">
         <aside className="hidden min-h-0 border-r border-white/10 bg-[#164a2c] backdrop-blur lg:flex lg:flex-col">
-          <div className="border-b border-ink/10 px-5 py-5">
+          <div className="border-b border-white/10 px-5 py-5">
             <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center bg-accent-gradient text-white shadow-glow">
+              <div className="grid h-10 w-10 place-items-center bg-[linear-gradient(135deg,#38bdf8,#6366f1)] text-white shadow-glow">
                 <BarChart3 className="h-5 w-5" aria-hidden="true" />
               </div>
               <div>
@@ -400,7 +400,7 @@ export default function ChatPage() {
               type="button"
               onClick={startNewSession}
               disabled={isStreaming}
-              className="flex h-11 w-full items-center justify-center gap-2 bg-accent-gradient text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-11 w-full items-center justify-center gap-2 bg-[linear-gradient(135deg,#38bdf8,#6366f1)] text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <MessageSquarePlus className="h-4 w-4" aria-hidden="true" />
               新会话
@@ -436,7 +436,7 @@ export default function ChatPage() {
             </section>
           </div>
 
-          <div className="border-t border-ink/10 p-4">
+          <div className="border-t border-white/10 p-4">
             <div className="grid gap-2 text-xs text-white/85">
               <div className="flex items-center justify-between gap-3">
                 <span className="inline-flex items-center gap-2">
@@ -457,7 +457,7 @@ export default function ChatPage() {
         </aside>
 
         <main className="relative flex min-h-0 min-w-0 flex-col overflow-hidden">
-          <header className="relative z-30 flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-white/[0.03] px-4 backdrop-blur lg:px-6">
+          <header className="relative z-30 flex h-16 shrink-0 items-center justify-between border-b border-black/10 bg-white/60 px-4 backdrop-blur lg:px-6">
             <div className="flex min-w-0 items-center gap-3">
               <div className="grid h-9 w-9 shrink-0 place-items-center bg-moss text-white lg:hidden">
                 <BarChart3 className="h-4 w-4" aria-hidden="true" />
@@ -547,7 +547,7 @@ export default function ChatPage() {
             </button>
           )}
 
-          <div className="border-t border-white/10 bg-white/[0.03] px-4 py-2 text-center text-xs text-ink/65">
+          <div className="border-t border-black/10 bg-white/60 px-4 py-2 text-center text-xs text-ink/65">
             <span className="inline-flex items-center gap-2">
               <Leaf className="h-3.5 w-3.5 text-moss" aria-hidden="true" />
               {isStreaming ? "运行中" : "就绪"}

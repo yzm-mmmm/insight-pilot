@@ -40,7 +40,7 @@ export function Composer({
     return (
         <form
             onSubmit={submit}
-            className="border-t border-white/10 bg-white/[0.02] px-4 py-4 backdrop-blur"
+            className="border-t border-black/10 bg-white/60 px-4 py-4 backdrop-blur"
         >
             <div className="glass-strong mx-auto flex max-w-5xl items-end gap-3 p-2 shadow-panel">
                 <div className="hidden h-11 w-11 shrink-0 place-items-center bg-moss/10 text-moss sm:grid">

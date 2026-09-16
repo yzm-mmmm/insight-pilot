@@ -17,7 +17,7 @@ export function MarkdownReport({
   const chartById = new Map(charts.map((chart) => [chart.id, chart]));
 
   return (
-    <div className="mt-4 border border-white/10 bg-white/[0.02] px-5 py-4">
+    <div className="mt-4 border border-black/10 bg-white/60 px-5 py-4">
       <div className="report-markdown text-[15px] leading-7 text-ink/85">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}

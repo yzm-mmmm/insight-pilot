@@ -1,6 +1,6 @@
 /**
  * Tailwind CSS 主题配置
- * 定义前端项目的字体、颜色和阴影扩展（深色科技风）
+ * 定义前端项目的字体、颜色和阴影扩展（浅绿色清新风）
  */
 import type { Config } from "tailwindcss";
 
@@ -19,21 +19,21 @@ export default {
         mono: ['"JetBrains Mono"', '"SFMono-Regular"', "Consolas", "monospace"],
       },
       colors: {
-        parchment: "#0a0a0f",
-        surface: "#12121a",
-        ink: "#f5f6fa",
-        soot: "#6366f1",
-        moss: "#38bdf8",
-        brass: "#a78bfa",
-        tomato: "#f87171",
-        mist: "#6b6b80",
-        "accent-from": "#38bdf8",
-        "accent-to": "#6366f1",
+        parchment: "#dcfce7",
+        surface: "#f4faf6",
+        ink: "#1f3d2a",
+        soot: "#15803d",
+        moss: "#16a34a",
+        brass: "#0d9488",
+        tomato: "#dc2626",
+        mist: "#5c7265",
+        "accent-from": "#22c55e",
+        "accent-to": "#059669",
       },
       boxShadow: {
-        line: "0 1px 0 rgba(255, 255, 255, 0.06)",
-        panel: "0 18px 48px rgba(0, 0, 0, 0.45)",
-        glow: "0 0 0 1px rgba(255, 255, 255, 0.04), 0 0 28px rgba(99, 102, 241, 0.12)",
+        line: "0 1px 0 rgba(22, 101, 52, 0.08)",
+        panel: "0 18px 48px rgba(22, 101, 52, 0.12)",
+        glow: "0 0 0 1px rgba(22, 163, 74, 0.10), 0 0 28px rgba(22, 163, 74, 0.18)",
       },
     },
   },

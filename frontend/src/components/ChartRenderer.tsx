@@ -2,7 +2,7 @@
  * ECharts 图表渲染组件
  * 按需引入 echarts 的图表类型、组件和 Canvas 渲染器，把后端下发的图表意图 spec
  * 组装成 ECharts option 后渲染，并在容器尺寸变化时自适应重绘。
- * 统一应用深色配色，使图表与整体深色科技风保持一致。
+ * 统一应用浅色配色，使图表与整体浅绿色清新风保持一致。
  */
 import { BarChart, LineChart, PieChart, ScatterChart } from "echarts/charts";
 import {
@@ -28,24 +28,24 @@ echarts.use([
   CanvasRenderer,
 ]);
 
-const PALETTE = ["#38bdf8", "#6366f1", "#a78bfa", "#34d399", "#fbbf24", "#f472b6"];
+const PALETTE = ["#16a34a", "#0d9488", "#34d399", "#fbbf24", "#f472b6", "#a78bfa"];
 
 const AXIS_STYLE = {
-  axisLine: { lineStyle: { color: "rgba(230,230,240,0.18)" } },
-  axisLabel: { color: "#8b8b9e" },
-  splitLine: { lineStyle: { color: "rgba(230,230,240,0.07)" } },
+  axisLine: { lineStyle: { color: "rgba(31,61,42,0.18)" } },
+  axisLabel: { color: "#5c7265" },
+  splitLine: { lineStyle: { color: "rgba(31,61,42,0.08)" } },
 };
 
 const TITLE_STYLE = {
-  color: "#e6e6f0",
+  color: "#1f3d2a",
   fontSize: 14,
   fontWeight: 600 as const,
 };
 
 const TOOLTIP = {
-  backgroundColor: "#1a1a24",
-  borderColor: "rgba(230,230,240,0.12)",
-  textStyle: { color: "#e6e6f0" },
+  backgroundColor: "#ffffff",
+  borderColor: "rgba(31,61,42,0.12)",
+  textStyle: { color: "#1f3d2a" },
 };
 
 function toNumber(value: unknown) {
@@ -67,8 +67,8 @@ function buildOption(spec: ChartSpec): echarts.EChartsCoreOption {
     return { title: { text: spec.title, left: "center", textStyle: TITLE_STYLE } };
   }
 
-  const base = { color: PALETTE, textStyle: { color: "#e6e6f0" } };
-  const legend = { bottom: 0, textStyle: { color: "#8b8b9e" } };
+  const base = { color: PALETTE, textStyle: { color: "#1f3d2a" } };
+  const legend = { bottom: 0, textStyle: { color: "#5c7265" } };
 
   if (spec.type === "pie") {
     const valueField = yFields[0];
@@ -151,7 +151,7 @@ export function ChartRenderer({ spec }: { spec: ChartSpec }) {
   return (
     <div
       ref={containerRef}
-      className="mt-4 h-72 w-full border border-white/10 bg-white/[0.02]"
+      className="mt-4 h-72 w-full border border-black/10 bg-white/60"
       role="img"
       aria-label={spec.title}
     />

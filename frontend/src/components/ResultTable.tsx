@@ -22,7 +22,7 @@ export function ResultTable({ result }: { result: StructuredResult }) {
 
   return (
     <section className="glass-strong mt-4 overflow-hidden">
-      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-black/10 px-4 py-3">
         <div className="flex items-center gap-2 text-sm font-semibold text-ink">
           <Database className="h-4 w-4 text-moss" aria-hidden="true" />
           查询结果
@@ -34,7 +34,7 @@ export function ResultTable({ result }: { result: StructuredResult }) {
       </div>
 
       {result.sql && (
-        <details className="group border-b border-white/10 bg-white/[0.02]">
+        <details className="group border-b border-black/10 bg-white/50">
           <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-2 text-xs font-medium text-ink/55 transition hover:text-moss [&::-webkit-details-marker]:hidden">
             <ChevronRight className="h-3.5 w-3.5 transition group-open:rotate-90" aria-hidden="true" />
             执行 SQL
@@ -53,7 +53,7 @@ export function ResultTable({ result }: { result: StructuredResult }) {
                 <th
                   key={column}
                   scope="col"
-                  className="border-b border-white/10 px-4 py-3 font-semibold text-ink/70"
+                  className="border-b border-black/10 px-4 py-3 font-semibold text-ink/70"
                 >
                   {column}
                 </th>
@@ -62,9 +62,9 @@ export function ResultTable({ result }: { result: StructuredResult }) {
           </thead>
           <tbody>
             {rows.map((row, rowIndex) => (
-              <tr key={rowIndex} className="odd:bg-white/[0.03] even:bg-transparent">
+              <tr key={rowIndex} className="odd:bg-black/[0.03] even:bg-transparent">
                 {columns.map((column) => (
-                  <td key={column} className="border-b border-white/5 px-4 py-3 text-ink/80">
+                  <td key={column} className="border-b border-black/5 px-4 py-3 text-ink/80">
                     {formatCell(row[column])}
                   </td>
                 ))}

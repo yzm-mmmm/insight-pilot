@@ -16,7 +16,7 @@ export function PlanView({
   if (!plan || plan.length === 0) return null;
 
   return (
-    <section className="mt-4 border border-white/10 bg-white/[0.03] px-4 py-3">
+    <section className="mt-4 border border-black/10 bg-white/60 px-4 py-3">
       <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-ink">
         <ListChecks className="h-4 w-4 text-moss" aria-hidden="true" />
         分析计划

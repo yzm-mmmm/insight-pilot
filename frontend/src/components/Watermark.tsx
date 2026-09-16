@@ -21,7 +21,7 @@ export function Watermark({ text }: { text: string }) {
   const svg =
     `<svg xmlns='http://www.w3.org/2000/svg' width='260' height='180'>` +
     `<text x='50%' y='52%' transform='rotate(-22 130 90)' ` +
-    `fill='rgba(230,230,240,0.05)' font-size='15' ` +
+    `fill='rgba(31,61,42,0.06)' font-size='15' ` +
     `font-family='system-ui, sans-serif' text-anchor='middle'>${escapeXml(text)}</text>` +
     `</svg>`;
 

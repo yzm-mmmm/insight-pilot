@@ -41,7 +41,7 @@ export default function LoginPage() {
 
   return (
     <div className="grid h-dvh place-items-center overflow-hidden bg-parchment text-ink">
-      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(90deg,rgba(230,230,240,0.035)_1px,transparent_1px),linear-gradient(rgba(230,230,240,0.03)_1px,transparent_1px)] bg-[size:48px_48px]" />
+      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(90deg,rgba(22,101,52,0.04)_1px,transparent_1px),linear-gradient(rgba(22,101,52,0.035)_1px,transparent_1px)] bg-[size:48px_48px]" />
       <div className="pointer-events-none fixed inset-0 grain" />
 
       <div className="glass relative w-full max-w-sm px-8 py-10 shadow-panel">
@@ -90,7 +90,7 @@ export default function LoginPage() {
               onChange={(event) => setUsername(event.target.value)}
               autoComplete="username"
               placeholder="请输入用户名"
-              className="w-full border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-ink outline-none transition placeholder:text-ink/35 focus:border-moss/50 focus:ring-2 focus:ring-moss/25"
+              className="w-full border border-black/10 bg-white/70 px-3 py-2.5 text-sm text-ink outline-none transition placeholder:text-ink/35 focus:border-moss/50 focus:ring-2 focus:ring-moss/25"
             />
           </div>
 
@@ -105,7 +105,7 @@ export default function LoginPage() {
               onChange={(event) => setPassword(event.target.value)}
               autoComplete={mode === "login" ? "current-password" : "new-password"}
               placeholder="请输入密码"
-              className="w-full border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-ink outline-none transition placeholder:text-ink/35 focus:border-moss/50 focus:ring-2 focus:ring-moss/25"
+              className="w-full border border-black/10 bg-white/70 px-3 py-2.5 text-sm text-ink outline-none transition placeholder:text-ink/35 focus:border-moss/50 focus:ring-2 focus:ring-moss/25"
             />
           </div>
 

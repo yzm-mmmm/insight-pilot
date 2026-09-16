@@ -99,14 +99,14 @@ export function FeedbackBar({ messageId }: { messageId: number }) {
             onChange={(event) => setComment(event.target.value)}
             placeholder="哪里不对？补充说明（可选）"
             rows={2}
-            className="w-full resize-none border border-ink/15 bg-white/[0.04] px-3 py-2 text-sm text-ink outline-none transition placeholder:text-ink/35 focus:border-moss/50 focus:ring-2 focus:ring-moss/25"
+            className="w-full resize-none border border-ink/15 bg-white/70 px-3 py-2 text-sm text-ink outline-none transition placeholder:text-ink/35 focus:border-moss/50 focus:ring-2 focus:ring-moss/25"
           />
           <textarea
             value={correctedSql}
             onChange={(event) => setCorrectedSql(event.target.value)}
             placeholder="正确的 SQL（可选，帮助模型学习）"
             rows={3}
-            className="w-full resize-none border border-ink/15 bg-white/[0.04] px-3 py-2 font-mono text-xs leading-5 text-ink outline-none transition placeholder:text-ink/35 focus:border-moss/50 focus:ring-2 focus:ring-moss/25"
+            className="w-full resize-none border border-ink/15 bg-white/70 px-3 py-2 font-mono text-xs leading-5 text-ink outline-none transition placeholder:text-ink/35 focus:border-moss/50 focus:ring-2 focus:ring-moss/25"
           />
           <div className="flex items-center justify-end gap-2">
             <button

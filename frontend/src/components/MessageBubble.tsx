@@ -27,7 +27,7 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
   return (
     <article className={cn("group flex gap-3", isUser && "justify-end")}>
       {!isUser && (
-        <div className="mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.06] text-moss">
+        <div className="mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-full border border-black/10 bg-white/70 text-moss">
           <Bot className="h-4 w-4" aria-hidden="true" />
         </div>
       )}
