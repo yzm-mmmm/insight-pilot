@@ -19,7 +19,9 @@ from app.agent.context import AuthContext, DataAgentContext
 from app.agent.graph import graph
 from app.agent.state import DataAgentState
 from app.core.log import logger
+from app.core.runtime_model import runtime_model
 from app.entities.user import User
+from app.observability.model_price import price_cache
 from app.observability.trace_store import append_trace
 from app.observability.tracer import LLMUsageCallbackHandler, TraceCollector
 from app.repositories.es.value_es_repository import ValueESRepository
@@ -165,7 +167,15 @@ class QueryService:
         last_sql: str | None = None
 
         # 链路追踪：收集器累计节点时间线与 LLM 调用明细，callback 负责捕获 token/耗时
-        collector = TraceCollector(query=query, session_id=thread_id, user_id=user_id)
+        # 提前解析本次调用的模型价格（懒加载 + 当天缓存），用于汇总本次总成本
+        try:
+            price = await price_cache.get_price(runtime_model.current())
+        except Exception as e:
+            logger.warning(f"获取模型价格失败，本次成本记为 0：{e}")
+            price = None
+        collector = TraceCollector(
+            query=query, session_id=thread_id, user_id=user_id, price=price
+        )
         llm_handler = LLMUsageCallbackHandler(collector)
         final_state: dict | None = None
 
@@ -251,7 +261,8 @@ class QueryService:
             append_trace(trace)
             logger.info(
                 f"链路追踪 {trace['trace_id']}：{trace['total_tokens']} tokens、"
-                f"{trace['llm_call_count']} 次 LLM 调用、耗时 {trace['duration_ms']}ms"
+                f"{trace['llm_call_count']} 次 LLM 调用、耗时 {trace['duration_ms']}ms、"
+                f"成本 {trace['total_cost_cny']} 元"
             )
         except Exception as e:
             logger.error(f"链路追踪落盘失败：{e}")

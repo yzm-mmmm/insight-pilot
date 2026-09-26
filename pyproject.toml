@@ -23,6 +23,7 @@ dependencies = [
     "loguru>=0.7.3",
     "mysql-replication>=1.0.0",
     "omegaconf>=2.3.0",
+    "oss2>=2.19.0",
     "pyjwt>=2.10.0",
     "python-dotenv>=1.2.2",
     "pyyaml>=6.0.3",

@@ -79,6 +79,16 @@ export async function updateProfile(
   });
 }
 
+export async function uploadAvatar(image: string): Promise<{ url: string }> {
+  return request<{ url: string }>("/api/upload/avatar", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify({ image }),
+  });
+}
+
 export async function changePassword(
   oldPassword: string,
   newPassword: string,

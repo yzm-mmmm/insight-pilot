@@ -13,7 +13,7 @@ from langchain_core.prompts import PromptTemplate
 from langgraph.runtime import Runtime
 
 from app.agent.context import DataAgentContext
-from app.agent.llm import llm
+from app.agent.llm import get_llm
 from app.agent.state import DataAgentState, PlanItemState
 from app.core.log import logger
 from app.prompt.prompt_loader import load_prompt
@@ -38,7 +38,7 @@ async def understand_plan(state: DataAgentState, runtime: Runtime[DataAgentConte
             template=load_prompt("understand_plan"),
             input_variables=["query", "history"],
         )
-        chain = prompt | llm | JsonOutputParser()
+        chain = prompt | get_llm() | JsonOutputParser()
 
         result = await chain.ainvoke({"query": query, "history": history_text})
         intent = str(result.get("intent", "")).strip() if isinstance(result, dict) else ""

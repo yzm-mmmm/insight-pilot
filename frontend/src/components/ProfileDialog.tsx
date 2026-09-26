@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, KeyRound, Loader2, UserRound, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { uploadAvatar } from "../lib/authApi";
 import { fileToDataUrl } from "../lib/image";
 
 const inputClass =
@@ -57,7 +58,13 @@ export function ProfileDialog({ open, onClose }: { open: boolean; onClose: () =>
     setMessage(null);
     setError(null);
     try {
-      await updateProfile(nickname.trim(), avatar);
+      let avatarUrl = avatar;
+      if (avatar && avatar.startsWith("data:")) {
+        const { url } = await uploadAvatar(avatar);
+        avatarUrl = url;
+        setAvatar(url);
+      }
+      await updateProfile(nickname.trim(), avatarUrl);
       setMessage("个人资料已保存");
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));

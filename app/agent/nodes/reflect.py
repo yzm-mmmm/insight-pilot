@@ -17,7 +17,7 @@ from langchain_core.prompts import PromptTemplate
 from langgraph.runtime import Runtime
 
 from app.agent.context import DataAgentContext
-from app.agent.llm import llm
+from app.agent.llm import get_llm
 from app.agent.state import DataAgentState, ReflectionState
 from app.conf.app_config import app_config
 from app.core.log import logger
@@ -57,7 +57,7 @@ async def reflect(state: DataAgentState, runtime: Runtime[DataAgentContext]):
                 "max_loops",
             ],
         )
-        chain = prompt | llm | JsonOutputParser()
+        chain = prompt | get_llm() | JsonOutputParser()
 
         result = await chain.ainvoke(
             {

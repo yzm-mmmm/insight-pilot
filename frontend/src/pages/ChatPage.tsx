@@ -21,6 +21,7 @@ import { AccountSwitcher } from "../components/AccountSwitcher";
 import { AdminPanel } from "../components/AdminPanel";
 import { Composer } from "../components/Composer";
 import { DataSourcePanel } from "../components/DataSourcePanel";
+import { DeepSeekControls } from "../components/DeepSeekControls";
 import { EmptyState } from "../components/EmptyState";
 import { MessageBubble } from "../components/MessageBubble";
 import { PermissionPanel } from "../components/PermissionPanel";
@@ -435,6 +436,8 @@ export default function ChatPage() {
               </div>
             </section>
           </div>
+
+          {user?.role === "admin" && <DeepSeekControls />}
 
           <div className="border-t border-white/10 p-4">
             <div className="grid gap-2 text-xs text-white/85">

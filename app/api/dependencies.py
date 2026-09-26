@@ -35,6 +35,8 @@ from app.repositories.qdrant.metric_qdrant_repository import MetricQdrantReposit
 from app.services.admin_service import AdminService
 from app.services.auth_service import AuthService
 from app.services.data_source_service import DataSourceService
+from app.services.deepseek_service import DeepSeekService
+from app.services.oss_service import OSSService
 from app.services.permission_service import PermissionService
 from app.services.query_service import QueryService
 from app.services.sync_manager import SyncManager, sync_manager
@@ -97,6 +99,18 @@ async def get_value_es_repository() -> ValueESRepository:
     """创建字段取值全文检索仓储"""
 
     return ValueESRepository(es_client_manager.client)
+
+
+async def get_oss_service() -> OSSService:
+    """获取对象存储服务（未配置 OSS 时在调用处报错）"""
+
+    return OSSService()
+
+
+async def get_deepseek_service() -> DeepSeekService:
+    """获取 DeepSeek 账户服务（查询余额用）"""
+
+    return DeepSeekService()
 
 
 async def get_user_repository(

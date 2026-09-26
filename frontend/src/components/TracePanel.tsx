@@ -35,9 +35,9 @@ function formatEpoch(seconds: number) {
   return `${date.getMonth() + 1}/${date.getDate()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 }
 
-function formatCost(usd: number | null | undefined) {
-  if (usd == null) return "—";
-  return `$${usd.toFixed(6)}`;
+function formatCost(cny: number | null | undefined) {
+  if (cny == null) return "—";
+  return `¥${cny.toFixed(6)}`;
 }
 
 function formatTokens(value: number | null | undefined) {
@@ -80,7 +80,7 @@ function TraceDetail({ trace }: { trace: Trace }) {
         <Metric label="总耗时" value={formatMs(trace.duration_ms)} icon={<Clock className="h-3 w-3" />} />
         <Metric label="总 Token" value={formatTokens(trace.total_tokens)} icon={<Cpu className="h-3 w-3" />} />
         <Metric label="LLM 调用" value={`${trace.llm_call_count} 次`} icon={<Waypoints className="h-3 w-3" />} />
-        <Metric label="估算成本" value={formatCost(trace.estimated_cost_usd)} icon={<Coins className="h-3 w-3" />} />
+        <Metric label="总成本" value={formatCost(trace.total_cost_cny ?? trace.estimated_cost_usd)} icon={<Coins className="h-3 w-3" />} />
         <Metric label="SQL 重试" value={formatTokens(trace.sql_retry_count ?? 0)} />
         <Metric label="反思轮数" value={formatTokens(trace.iteration_count ?? 0)} />
         <Metric label="图表数" value={formatTokens(trace.chart_count ?? 0)} />
@@ -138,21 +138,21 @@ function TraceDetail({ trace }: { trace: Trace }) {
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b border-black/10 text-black/50">
+                  <th className="py-1.5 pr-3 font-medium">描述</th>
                   <th className="py-1.5 pr-3 font-medium">模型</th>
                   <th className="py-1.5 pr-3 font-medium">输入</th>
                   <th className="py-1.5 pr-3 font-medium">输出</th>
                   <th className="py-1.5 pr-3 font-medium">耗时</th>
-                  <th className="py-1.5 font-medium">成本</th>
                 </tr>
               </thead>
               <tbody>
                 {trace.llm_calls.map((call, index) => (
                   <tr key={index} className="border-b border-black/5 font-mono text-black/75">
+                    <td className="py-1.5 pr-3 text-black/60">{call.step ?? "—"}</td>
                     <td className="max-w-[120px] truncate py-1.5 pr-3">{call.model ?? "—"}</td>
                     <td className="py-1.5 pr-3">{formatTokens(call.prompt_tokens)}</td>
                     <td className="py-1.5 pr-3">{formatTokens(call.completion_tokens)}</td>
                     <td className="py-1.5 pr-3">{formatMs(call.duration_ms)}</td>
-                    <td className="py-1.5">{formatCost(call.cost_usd)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -296,7 +296,7 @@ export function TracePanel({
                           <span>{formatEpoch(trace.started_at)}</span>
                           <span>{formatMs(trace.duration_ms)}</span>
                           <span>{formatTokens(trace.total_tokens)} tok</span>
-                          <span>{formatCost(trace.estimated_cost_usd)}</span>
+                          <span>{formatCost(trace.total_cost_cny ?? trace.estimated_cost_usd)}</span>
                         </div>
                       </div>
                       <ChevronDown

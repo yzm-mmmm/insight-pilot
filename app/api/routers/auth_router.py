@@ -63,7 +63,10 @@ async def update_profile(
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ):
     """更新当前用户的昵称与头像"""
-    updated = await auth_service.update_profile(user.id, request.nickname, request.avatar)
+    try:
+        updated = await auth_service.update_profile(user.id, request.nickname, request.avatar)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     return _build_user_out(updated)
 
 

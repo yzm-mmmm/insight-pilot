@@ -85,6 +85,7 @@ class LLMConfig:
     model_name: str
     api_key: str
     base_url: str
+    available_models: list[str]
 
 
 @dataclass
@@ -105,6 +106,25 @@ class AgentConfig:
 
 
 @dataclass
+class OSSConfig:
+    """阿里云 OSS 配置"""
+
+    endpoint: str
+    access_key_id: str
+    access_key_secret: str
+    bucket: str
+
+
+@dataclass
+class ModelPriceConfig:
+    """模型价格配置：爬取来源、模型别名与爬取失败时的兜底单价（元 / 1M token）"""
+
+    source_url: str
+    fallback: dict
+    aliases: dict
+
+
+@dataclass
 class AppConfig:
     """项目级总配置入口"""
 
@@ -117,6 +137,8 @@ class AppConfig:
     llm: LLMConfig
     jwt: JWTConfig
     agent: AgentConfig
+    oss: OSSConfig
+    model_price: ModelPriceConfig
 
 
 # 从当前文件位置回到项目根目录，再定位到 conf/app_config.yaml

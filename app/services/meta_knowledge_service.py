@@ -18,7 +18,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from omegaconf import OmegaConf
 
-from app.agent.llm import llm
+from app.agent.llm import get_llm
 from app.conf.meta_config import MetaConfig
 from app.core.log import logger
 from app.entities.column_info import ColumnInfo
@@ -292,7 +292,7 @@ class MetaKnowledgeService:
                 template=load_prompt("describe_mirror_columns"),
                 input_variables=["table_name", "columns"],
             )
-            chain = prompt | llm | JsonOutputParser()
+            chain = prompt | get_llm() | JsonOutputParser()
             result = await chain.ainvoke(
                 {
                     "table_name": mirror_name,

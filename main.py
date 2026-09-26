@@ -18,6 +18,8 @@ from app.api.routers.feedback_router import feedback_router
 from app.api.routers.permission_router import permission_router
 from app.api.routers.query_router import query_router
 from app.api.routers.session_router import session_router
+from app.api.routers.system_router import system_router
+from app.api.routers.upload_router import upload_router
 from app.core.context import request_id_ctx_var
 
 # lifespan 交给 FastAPI 管理，用于在服务启动和关闭时统一初始化与释放外部客户端
@@ -43,6 +45,12 @@ app.include_router(admin_router)
 
 # 注册数据源路由：提供数据源接入申请、审批与同步管理
 app.include_router(data_source_router)
+
+# 注册上传路由：提供头像上传（写入阿里云 OSS，数据库只存 URL）
+app.include_router(upload_router)
+
+# 注册系统设置路由：提供管理员专用的模型切换与 DeepSeek 余额查询
+app.include_router(system_router)
 
 
 @app.middleware("http")

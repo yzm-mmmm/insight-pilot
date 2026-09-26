@@ -34,6 +34,9 @@
   - [数据源接入与实时同步](#数据源接入与实时同步)
   - [系统化评测](#系统化评测)
   - [链路追踪 / 可观测性](#链路追踪--可观测性)
+  - [模型价格与成本统计](#模型价格与成本统计)
+  - [运行时模型切换与余额](#运行时模型切换与余额)
+  - [头像上传（OSS）](#头像上传oss)
   - [反馈闭环 / 在线进化](#反馈闭环--在线进化)
 - [配置说明](#配置说明)
 - [能力边界](#能力边界)
@@ -51,8 +54,9 @@
 | 分析模式 | 单轮「提问 → 一条 SQL → 表格」 | 自主分析循环：规划、检索、生成/校验/执行、反思修正、下钻，迭代上限兜底 |
 | 数据范围 | 固定电商数仓表 | 混合检索召回 + 多数据源接入（审批 + 全量快照 + binlog 实时同步） |
 | 结果呈现 | 仅数据表格 | 表格 + ECharts 图表 + Markdown 分析报告 |
-| 交互体验 | 一次性问答 | 登录鉴权、多轮追问、会话持久化、SSE 流式进度 |
+| 交互体验 | 一次性问答 | 登录鉴权、多轮追问、会话持久化、SSE 流式进度、头像上传 |
 | 安全可控 | 直接执行 SQL | SQL 只读护栏 + 表级权限，杜绝误写数仓 |
+| 用量成本 | 无法度量 | 自动统计 token 用量与人民币成本，管理员可查余额、充值、运行时切换模型 |
 | 质量治理 | 无法度量 | 金标准评测、链路追踪、反馈闭环在线进化 |
 
 ## 界面预览
@@ -64,6 +68,10 @@
 **查询结果 · 表格 + 图表 + 分析报告**
 
 <p align="center"><img src="docs/images/query-result.png" alt="查询结果" width="48%"/></p>
+
+**链路追踪 · LLM 调用明细与成本**
+
+<p align="center"><img src="docs/images/llm.png" alt="LLM 调用明细与成本" width="45%"/></p>
 
 **登录 / 注册**
 
@@ -79,9 +87,11 @@
 - **混合检索召回**：`Qdrant` 负责字段/指标的语义召回，`Elasticsearch` 负责字段取值全文检索，`MySQL` 保存完整权威的结构化元数据，字段、指标、取值三类信息协同召回。
 - **SQL 只读安全护栏**：所有生成的 SQL 在执行前经过 `assert_read_only_sql` 强制校验，只允许 `SELECT`/`WITH`，拒绝多语句、`INTO OUTFILE` 及各类写关键字，从代码层杜绝误写数仓。
 - **自动画图 + 报告**：查询结束后自动产出图表规格（柱状/折线/饼图/散点），并生成引用图表占位符的 Markdown 分析报告。
-- **鉴权与多轮会话**：自建账号密码 + JWT（HS256）鉴权；多会话、按用户隔离、持久化到 MySQL，下次登录可回看并继续之前的对话。
+- **鉴权与多轮会话**：自建账号密码 + JWT（HS256）鉴权；多会话、按用户隔离、持久化到 MySQL，下次登录可回看并继续之前的对话；头像上传到阿里云 OSS，数据库只存 URL。
 - **前后端流式联调**：FastAPI + SSE 把节点进度、结果、图表、报告实时推给 React 前端，动态渲染执行时间线。
 - **多数据源接入与实时同步**：业务库经「申请 → 审批」后在一致性快照内全量镜像进自有数仓，并订阅源库 binlog 实时增量同步（行级 INSERT/UPDATE/DELETE 与 DDL 建表/改表/删表自动跟随），镜像表自动爬取元数据并生成中文语义，可直接被自然语言查询。
+- **用量成本可观测**：记录每次问数的 token 用量、每条 LLM 调用所属步骤与实际调用模型，按官方价（空闲/高峰分档）汇总人民币成本，链路追踪面板直接展示总成本。
+- **管理员模型与余额管理**：管理员可在界面实时查看 DeepSeek 剩余余额、跳转充值，并运行时切换模型（持久化、立即生效，无需重启）。
 - **系统化评测**：内置金标准评测集，量化 SQL 正确率、召回命中率与端到端通过率，让 Agent 的可靠性可度量、可回归。
 - **链路追踪 / 可观测性**：采集每次 LLM 调用的 token 与耗时、每个节点的执行跨度，落盘 `logs/traces.jsonl`，前端提供可视化面板。
 - **反馈闭环 / 在线进化**：对回答可赞/踩，踩时可附上正确 SQL 纠错；纠错记录会作为 few-shot 示例注入后续 SQL 生成，让 Agent 从历史错误中持续学习。
@@ -96,8 +106,9 @@
 | 全文检索 | `Elasticsearch` | 字段真实取值，支持关键词和值域检索 |
 | Embedding | `TEI` / `BAAI/bge-large-zh-v1.5` | 将文本转成向量 |
 | 智能体编排 | `LangGraph` | 组织理解规划、召回与自主分析循环工作流 |
-| 模型接入 | `LangChain` | 封装 LLM 与 Embedding 调用（默认 `deepseek-chat`） |
-| 后端接口 | `FastAPI` | 鉴权、问数、会话管理、反馈，依赖注入与生命周期管理 |
+| 模型接入 | `LangChain` | 封装 LLM 调用（默认 `deepseek-flash`，支持管理员运行时切换） |
+| 对象存储 | `阿里云 OSS` / `oss2` | 头像等用户文件存储，数据库只存公网 URL |
+| 后端接口 | `FastAPI` | 鉴权、问数、会话管理、反馈、系统设置，依赖注入与生命周期管理 |
 | 流式协议 | `SSE` | 实时返回会话、计划、进度、结果、图表和报告 |
 | 鉴权 | `PyJWT` / `bcrypt` | JWT 签发校验 + 密码哈希 |
 | 数据源接入 | `mysql-replication` / `pymysql` | 连接外部源库，一致性快照全量同步 + binlog 增量同步（CDC） |
@@ -109,7 +120,7 @@
 
 ```mermaid
 flowchart LR
-    UI["React + Vite 前端<br/>聊天界面 / 图表 / 报告 / 追踪 / 反馈 / 数据源面板"] -->|"/api/query · /api/data-sources"| API["FastAPI 接口层<br/>鉴权 / SSE / 会话 / 反馈 / 数据源审批"]
+    UI["React + Vite 前端<br/>聊天界面 / 图表 / 报告 / 追踪 / 反馈 / 数据源 / DeepSeek 控件"] -->|"/api/query · /api/data-sources · /api/admin/*"| API["FastAPI 接口层<br/>鉴权 / SSE / 会话 / 反馈 / 数据源审批 / 系统设置"]
     API --> AGENT["LangGraph 智能体<br/>理解规划 / 召回 / 生成SQL / 反思 / 画图报告"]
     AGENT --> LLM["DeepSeek LLM"]
     AGENT --> EMB["TEI Embedding"]
@@ -120,7 +131,9 @@ flowchart LR
     API --> SYNC["SyncManager<br/>一致性快照全量同步 + binlog CDC"]
     SYNC --> SRC[("外部源库 · MySQL")]
     SYNC --> DW
+    API --> OSS[("阿里云 OSS · 头像文件")]
     API --> TRACE[("logs/traces.jsonl · 链路追踪")]
+    API --> DS_BALANCE["DeepSeek 余额 / 充值 / 换模型"]
 ```
 
 ## 分析流程
@@ -156,25 +169,26 @@ flowchart TD
 - 反思循环由 `reflection.next_action` 与配置上限 `agent.max_sql_retries`、`agent.max_analysis_loops` 共同约束，保证不会死循环。
 - SQL 校验、执行、反思都会产出 `progress` 事件，前端据此动态渲染执行时间线。
 - 用户历史纠错记录会在 `generate_sql` / `correct_sql` 两个节点作为 few-shot 示例注入提示词。
+- 多轮追问时，`understand_plan` 会读取本会话最近 6 条历史消息，辅助解析「那华东呢」这类指代并补全限定条件。
 
 ## 项目结构
 
 ```text
 insight-pilot/
 ├── app/
-│   ├── agent/            # LangGraph 图、状态、上下文与各节点
+│   ├── agent/            # LangGraph 图、状态、上下文、各节点与 LLM 实例（运行时可切换）
 │   ├── api/              # FastAPI 路由、依赖注入、生命周期与请求结构
 │   ├── clients/          # MySQL、Qdrant、Elasticsearch、Embedding 客户端管理与源库连接
 │   ├── conf/             # 配置 dataclass 与配置加载工具
-│   ├── core/             # 日志、request_id 上下文、JWT、可逆加密与 SQL 只读护栏
+│   ├── core/             # 日志、request_id 上下文、JWT、可逆加密、SQL 只读护栏与运行时模型设置
 │   ├── entities/         # 更贴近业务语义的数据对象
 │   ├── evaluation/       # 评测集用例、打分器与执行器
 │   ├── models/           # SQLAlchemy ORM 模型
-│   ├── observability/    # 链路追踪：token/耗时采集与 trace 落盘
+│   ├── observability/    # 链路追踪 + 模型价格：token/耗时采集、trace 落盘、懒加载模型单价
 │   ├── prompt/           # Prompt 加载工具
 │   ├── repositories/     # MySQL、Qdrant、Elasticsearch 数据访问层
 │   ├── scripts/          # 元数据知识库构建、数据源建表与评测入口脚本
-│   └── services/         # 鉴权、权限、数据源接入与同步、元数据构建与问数查询服务
+│   └── services/         # 鉴权、权限、数据源同步、元数据、问数查询、OSS 头像与 DeepSeek 账户服务
 ├── conf/                 # app_config.yaml、meta_config.yaml
 ├── docker/               # Docker Compose、MySQL 初始化 SQL、ES 插件、Embedding 挂载目录
 ├── eval/                 # 金标准评测用例集（cases.yaml）
@@ -192,8 +206,9 @@ insight-pilot/
 | ------ | ---- | ------ | ---- |
 | 🔴 必改 | `.env` | `LLM_API_KEY` | 大模型 API Key。默认走 DeepSeek，去 [platform.deepseek.com](https://platform.deepseek.com) 申请 |
 | 🔴 必改 | `.env` | `JWT_SECRET_KEY` | JWT 签名密钥，务必改成随机长字符串；泄露后任何人都能伪造登录态 |
+| 🟡 按需 | `.env` | `OSS_*` | 启用头像上传时填阿里云 OSS 的 `OSS_ENDPOINT` / `OSS_ACCESS_KEY_ID` / `OSS_ACCESS_KEY_SECRET` / `OSS_BUCKET`；不填则头像上传不可用，其余功能不受影响 |
 | 🟡 按需 | `conf/app_config.yaml` | `db_meta.password` / `db_dw.password` | 改了 `docker/docker-compose.yaml` 里的 MySQL 密码时需同步 |
-| 🟡 按需 | `conf/app_config.yaml` | `llm.model_name` / `llm.base_url` / `llm.api_key` | 换用其他模型平台时修改 |
+| 🟡 按需 | `conf/app_config.yaml` | `llm.model_name` / `llm.base_url` / `llm.available_models` | 换用其他模型平台或调整可切换模型列表时修改 |
 | 🟡 按需 | `frontend/.env` | `VITE_API_BASE_URL` / `VITE_DEV_PROXY_TARGET` | 后端地址/端口不是默认值时修改 |
 | 🟢 默认即可 | `docker/docker-compose.yaml` | MySQL 密码、各端口 | 本地演示用默认值即可；对外部署才需要改 |
 
@@ -233,7 +248,7 @@ JWT_SECRET_KEY=一串足够长的随机字符串     # 🔴 必改，不要用�
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-其余按默认即可；换用其他模型平台见 [配置说明](#配置说明)。
+如需头像上传，再填入阿里云 OSS 的四个变量（`OSS_ENDPOINT` / `OSS_ACCESS_KEY_ID` / `OSS_ACCESS_KEY_SECRET` / `OSS_BUCKET`），否则头像上传会返回「OSS 未配置」。其余按默认即可；换用其他模型平台见 [配置说明](#配置说明)。
 
 ### 4. 准备 Embedding 模型
 
@@ -295,6 +310,9 @@ pnpm dev
 | `POST` | `/api/auth/register` | 注册并返回 JWT |
 | `POST` | `/api/auth/login` | 登录并返回 JWT |
 | `GET` | `/api/auth/me` | 返回当前登录用户信息 |
+| `PATCH` | `/api/auth/profile` | 更新当前用户昵称与头像（头像需先上传） |
+| `PATCH` | `/api/auth/password` | 修改当前用户密码 |
+| `POST` | `/api/upload/avatar` | 上传头像到阿里云 OSS，返回公网 URL（需鉴权） |
 | `POST` | `/api/query` | 问数查询（SSE），需鉴权 |
 | `GET` | `/api/sessions` | 返回当前用户的会话列表 |
 | `GET` | `/api/sessions/{id}` | 返回会话详情与历史消息 |
@@ -307,6 +325,9 @@ pnpm dev
 | `POST` | `/api/data-sources/{id}/review` | 审批申请（仅管理员；approved 触发全量同步） |
 | `POST` | `/api/data-sources/{id}/resync` | 手动触发全量重同步（仅管理员） |
 | `DELETE` | `/api/data-sources/{id}` | 删除数据源：停增量、删镜像表、清元数据（仅管理员） |
+| `GET` | `/api/admin/model` | 返回当前运行时模型与可切换列表（仅管理员） |
+| `PUT` | `/api/admin/model` | 切换运行时模型，持久化并立即生效（仅管理员） |
+| `GET` | `/api/admin/deepseek/balance` | 通过后端代理查询 DeepSeek 账户余额（仅管理员） |
 
 `/api/query` 请求体：
 
@@ -431,13 +452,14 @@ uv run python -m app.scripts.evaluate -c eval/cases.yaml --limit 5
 自建轻量 Tracer（`app/observability/`），通过 LangChain callback 捕获每次 LLM 调用的 token 消耗与耗时，配合进度事件统计每个节点的执行耗时，最终把一次问数结构化落盘到 `logs/traces.jsonl`（一行一条）：
 
 - **节点时间线**：每个节点（理解规划 / 召回 / 生成 SQL / 执行 / 反思 / 画图 / 报告等）的起止与耗时；
-- **LLM 明细**：每次调用的模型、prompt/completion token、耗时与估算成本（按 deepseek-chat 官方价估算）；
+- **LLM 明细**：每次调用的「描述（所属步骤）/ 实际调用模型 / 输入 token / 输出 token / 耗时」；
+- **总成本**：面板最上方展示本次问数的总成本（人民币，按当前模型单价汇总所有 LLM 调用）；
 - **自主循环诊断**：SQL 历史（含失败重试的中间 SQL）、SQL 重试次数、反思轮数、最终动作。
 
 每次查询结束都会打印一行汇总日志，例如：
 
 ```text
-链路追踪 abc123…：2840 tokens、7 次 LLM 调用、耗时 6.2s
+链路追踪 abc123…：2840 tokens、7 次 LLM 调用、耗时 6.2s、成本 0.012345 元
 ```
 
 通过 API 读取某个会话的全部 trace：
@@ -452,11 +474,33 @@ curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/sessions/12/tra
 tail -f logs/traces.jsonl
 ```
 
-前端会话页顶栏的「链路追踪」按钮会打开右侧抽屉，逐条 trace 可视化节点时间线、LLM token/成本明细与 SQL 历史。
+前端会话页顶栏的「链路追踪」按钮会打开右侧抽屉，逐条 trace 可视化节点时间线、LLM 调用明细与 SQL 历史。
 
 <p align="center"><img src="docs/images/trace.png" alt="链路追踪面板" width="40%"/></p>
 
-> 成本估算中的单价为 [tracer.py](app/observability/tracer.py) 里写死的 deepseek-chat 定价常量，换模型后需同步调整。
+### 模型价格与成本统计
+
+模型单价不再是写死的常量，而是「懒加载 + 当天落盘缓存」动态获取（`app/observability/model_price.py`）：
+
+1. 某天第一次需要某模型价格时，才去爬取 DeepSeek 官方定价页；
+2. 解析成功后写入 `logs/model_prices.json` 缓存，当天有效，进程重启不丢；
+3. 爬取失败或未解析到该模型时，回退到 `conf/app_config.yaml` 里 `model_price.fallback` 的兜底单价，保证成本估算始终可用。
+
+计费按 DeepSeek 的「空闲 / 高峰」分档（北京时间工作日 9:00–12:00、14:00–18:00 为高峰，其余为半价），单位统一为「元 / 1M token」，输入按「缓存未命中」口径计。成本在 trace 汇总时一次性算出，明细里不再逐条记录单次金额。
+
+### 运行时模型切换与余额
+
+左下角（「API / 完成」指示上方）对管理员提供三个控件：
+
+- **余额**：通过后端代理调用 DeepSeek 官方余额接口，前端不直接接触 API Key；展示当前账户剩余余额，可手动刷新；
+- **去充值**：一键跳转 DeepSeek 充值页；
+- **模型**：下拉切换运行时模型（如 `deepseek-flash` ↔ `deepseek-v4-pro`），切换结果持久化到 `logs/model_setting.json`，对后续查询立即生效、重启后仍生效。
+
+实现上，LLM 实例由「导入时固定」改为 `get_llm()` 按当前运行时模型惰性构建（`app/agent/llm.py` + `app/core/runtime_model.py`）；切换模型后下一次调用自动用新模型名重建实例。可切换模型列表来自 `llm.available_models`。
+
+### 头像上传（OSS）
+
+用户头像经 `POST /api/upload/avatar` 上传到阿里云 OSS（`oss2` SDK），后端返回公网 URL，数据库只保存该 URL，避免 base64 直存导致的字段超限。头像上传后顶栏、账号切换与对话气泡中的头像会同步更新；未配置 OSS 时上传接口返回「OSS 未配置」，不影响其他功能。
 
 ### 反馈闭环 / 在线进化
 
@@ -483,14 +527,16 @@ curl -X POST -H "Authorization: Bearer $TOKEN" \
 
 | 配置项 | 说明 | 是否需要修改 |
 | ------ | ---- | ------------ |
-| `llm` | 默认 `deepseek-chat`，可替换为任意兼容 OpenAI 接口的模型平台 | 🟡 换模型平台时 |
+| `llm` | 默认 `deepseek-flash`，`base_url` 指向 DeepSeek，`available_models` 为管理员可切换的模型列表 | 🟡 换模型平台时 |
 | `jwt` | JWT 密钥（读自 `.env`）、算法（HS256）与过期时间 | 🔴 密钥在 `.env` 里必改 |
 | `agent` | 反思循环上限：`max_sql_retries`、`max_analysis_loops` | 🟢 默认即可 |
 | `db_meta` / `db_dw` | 元数据库与数仓连接信息 | 🟡 改数据库密码时 |
 | `qdrant` / `es` / `embedding` | 向量库、全文检索与 Embedding 服务地址 | 🟢 默认即可 |
+| `oss` | 阿里云 OSS 的 endpoint / access_key_id / access_key_secret / bucket（读自 `.env`） | 🟡 启用头像上传时 |
+| `model_price` | 模型价格爬取来源 `source_url`、别名 `aliases` 与兜底单价 `fallback` | 🟢 默认即可 |
 
 > 本项目的元数据口径配置在 `conf/meta_config.yaml`，包含指标（如 GMV、AOV）与事实表/维度表的关联字段定义。数据源接入的连接信息（主机/端口/库名/账号/加密密码）保存在 `meta.data_source` 表，不在配置文件中维护。
 
 ## 能力边界
 
-本项目聚焦「自主数据分析」的核心链路，暂不覆盖生产治理能力，例如：行级数据权限、多租户隔离、查询缓存与限流、报告质量的 LLM-as-judge 评测、监控告警与灰度发布。数据源接入目前仅支持 MySQL 源库与常见 DDL（`CREATE/ALTER/DROP TABLE`），跨异构数据源（PostgreSQL、Oracle 等）、`RENAME TABLE` 自动同步、复杂 schema 漂移处理与密码托管（KMS）尚待扩展。
+本项目聚焦「自主数据分析」的核心链路，暂不覆盖生产治理能力，例如：行级数据权限、多租户隔离、查询缓存与限流、报告质量的 LLM-as-judge 评测、监控告警与灰度发布。数据源接入目前仅支持 MySQL 源库与常见 DDL（`CREATE/ALTER/DROP TABLE`），跨异构数据源（PostgreSQL、Oracle 等）、`RENAME TABLE` 自动同步、复杂 schema 漂移处理与密码托管（KMS）尚待扩展。头像上传依赖阿里云 OSS，未配置时该功能不可用；模型成本为估算值，以 DeepSeek 官方账单为准。

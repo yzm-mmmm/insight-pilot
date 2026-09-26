@@ -39,9 +39,13 @@ es:
   index_name: data_agent
 
 llm:
-  model_name: deepseek-chat
+  model_name: deepseek-flash
   api_key: ${oc.env:LLM_API_KEY}
   base_url: https://api.deepseek.com/v1
+  # 管理员可在前端切换的模型列表，运行时切换结果持久化到 logs/model_setting.json
+  available_models:
+    - deepseek-flash
+    - deepseek-v4-pro
 
 jwt:
   secret_key: ${oc.env:JWT_SECRET_KEY}
@@ -51,3 +55,24 @@ jwt:
 agent:
   max_sql_retries: 3
   max_analysis_loops: 6
+
+oss:
+  endpoint: ${oc.env:OSS_ENDPOINT,}
+  access_key_id: ${oc.env:OSS_ACCESS_KEY_ID,}
+  access_key_secret: ${oc.env:OSS_ACCESS_KEY_SECRET,}
+  bucket: ${oc.env:OSS_BUCKET,}
+
+model_price:
+  source_url: https://api-docs.deepseek.com/zh-cn/quick_start/pricing/
+  aliases: {}
+  fallback:
+    deepseek-v4-pro:
+      input_cache_miss_off_peak: 4.5
+      input_cache_miss_peak: 9.0
+      output_off_peak: 13.5
+      output_peak: 27.0
+    deepseek-flash:
+      input_cache_miss_off_peak: 1.0
+      input_cache_miss_peak: 2.0
+      output_off_peak: 4.0
+      output_peak: 8.0

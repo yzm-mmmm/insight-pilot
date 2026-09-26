@@ -49,6 +49,8 @@ class AuthService:
         self, user_id: int, nickname: str | None, avatar: str | None
     ) -> User:
         """更新当前用户的昵称与头像，返回更新后的用户"""
+        if avatar and avatar.startswith("data:"):
+            raise ValueError("头像请先通过 /api/upload/avatar 上传，再保存返回的 URL")
         user = await self.user_repository.update_profile(user_id, nickname, avatar)
         await self.user_repository.session.commit()
         return user

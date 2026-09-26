@@ -3,6 +3,7 @@
  * 组合展示用户问题、智能体回复、执行流程、结果表格、图表和分析报告
  */
 import { BarChart3, Bot, Copy, UserRound } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 import { ChartRenderer } from "./ChartRenderer";
 import { FeedbackBar } from "./FeedbackBar";
 import { FlowView } from "./FlowView";
@@ -13,6 +14,7 @@ import { cn, formatTime, toClipboardText } from "../lib/format";
 import type { ChatMessage } from "../types/agent";
 
 export function MessageBubble({ message }: { message: ChatMessage }) {
+  const { user } = useAuth();
   const isUser = message.role === "user";
 
   const copy = async () => {
@@ -111,11 +113,18 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
         </div>
       </div>
 
-      {isUser && (
-        <div className="mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent-gradient text-white shadow-glow">
-          <UserRound className="h-4 w-4" aria-hidden="true" />
-        </div>
-      )}
+      {isUser &&
+        (user?.avatar ? (
+          <img
+            src={user.avatar}
+            alt="我的头像"
+            className="mt-1 h-9 w-9 shrink-0 rounded-full object-cover shadow-glow"
+          />
+        ) : (
+          <div className="mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent-gradient text-white shadow-glow">
+            <UserRound className="h-4 w-4" aria-hidden="true" />
+          </div>
+        ))}
     </article>
   );
 }

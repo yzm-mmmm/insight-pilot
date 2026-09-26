@@ -146,10 +146,10 @@ export type TraceNodeSpan = {
 export type TraceLLMCall = {
   model: string | null;
   duration_ms: number | null;
+  step?: string | null;
   prompt_tokens?: number | null;
   completion_tokens?: number | null;
   total_tokens?: number | null;
-  cost_usd?: number | null;
 };
 
 export type Trace = {
@@ -162,7 +162,8 @@ export type Trace = {
   started_at: number;
   duration_ms: number;
   total_tokens: number;
-  estimated_cost_usd: number;
+  total_cost_cny?: number | null;
+  estimated_cost_usd?: number | null;
   llm_call_count: number;
   node_spans: TraceNodeSpan[];
   llm_calls: TraceLLMCall[];
